@@ -16,6 +16,7 @@ namespace DataSystem.Http
             rotations.Add(targetUuid, new Quaternion());
             ServerAPI.AddListener("player_pose", (MessageInfo info) =>
             {
+                //return;
                 string senderUuid = info.Message.Split(":")[0];
                 if (senderUuid == _uuid) { return; }
 
@@ -42,10 +43,10 @@ namespace DataSystem.Http
             Vector3 position = SelfPlayer.localPosition;
             Debug.Log(position);
             Quaternion rotation = SelfPlayer.localRotation;
-            ServerAPI.Send("player_pose", _uuid + ":" + 
-                position.x + "," + position.y + "," + position.z + ":"  +
-                rotation.x + "," + rotation.y + "," + rotation.z + "," + rotation.w
-            );
+            string message = _uuid + ":" + 
+                             position.x + "," + position.y + "," + position.z + ":"  +
+                             rotation.x + "," + rotation.y + "," + rotation.z + "," + rotation.w;
+            ServerAPI.Send("player_pose", message);
         }
     }
 }

@@ -99,15 +99,9 @@ namespace DataSystem.Http
 
         public static void Send(string channel, string message)
         {
-            if (IsConnected)
-            {
-                string payload = $"{channel}: {message}";
-                ws.SendAsync(payload, null);
-            }
-            else
-            {
-                Debug.LogWarning("WebSocket is not connected.");
-            }
+            
+            string payload = $"{channel}: {message}";
+            ws.SendAsync(payload, null);
         }
 
         private static Dictionary<string, Action<MessageInfo>> channelListeners = new Dictionary<string, Action<MessageInfo>>();
