@@ -151,7 +151,7 @@ Transform:
   m_GameObject: {fileID: 41786841}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.5, z: 0}
+  m_LocalPosition: {x: -1.5, y: 0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -387,7 +387,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   OtherPlayerPrefab: {fileID: 1569975441}
   SelfPlayer: {fileID: 41786842}
+  _uuid: 
+  _host_uuid: unknown
+  OtherPlayers:
+    m_Keys: []
+    m_Values: []
   PlayerParent: {fileID: 312367894}
+  positions:
+    m_Keys: []
+    m_Values: []
 --- !u!4 &312367894
 Transform:
   m_ObjectHideFlags: 0
@@ -646,7 +654,7 @@ Transform:
   m_GameObject: {fileID: 871251040}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.5, z: 0}
+  m_LocalPosition: {x: 1.5, y: 0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -872,7 +880,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   OtherPlayerPrefab: {fileID: 1569975441}
   SelfPlayer: {fileID: 871251041}
+  _uuid: 
+  _host_uuid: unknown
+  OtherPlayers:
+    m_Keys: []
+    m_Values: []
   PlayerParent: {fileID: 1405656056}
+  positions:
+    m_Keys: []
+    m_Values: []
 --- !u!4 &1405656056
 Transform:
   m_ObjectHideFlags: 0

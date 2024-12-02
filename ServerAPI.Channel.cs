@@ -101,7 +101,7 @@ namespace DataSystem.Http
         {
             
             string payload = $"{channel}: {message}";
-            ws.SendAsync(payload, null);
+            ws.Send(payload);
         }
 
         private static Dictionary<string, Action<MessageInfo>> channelListeners = new Dictionary<string, Action<MessageInfo>>();

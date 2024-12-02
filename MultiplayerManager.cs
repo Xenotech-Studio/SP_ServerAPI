@@ -19,11 +19,13 @@ namespace DataSystem.Http
         public string _host_uuid = "unknown";
         
         private bool isInRoom = false;
-
-        public SerializedDictionary<string, GameObject> OtherPlayers = new SerializedDictionary<string, GameObject>();
-        private List<string> newPlayerToGenerate = new List<string>();
-
+        
         public Transform PlayerParent;
+
+        private Dictionary<string, GameObject> OtherPlayers = new Dictionary<string, GameObject>();
+        private List<string> newPlayerToGenerate = new List<string>();
+        private List<string> playersToDestroy = new List<string>();
+        
 
         public bool IsConnected() => ServerAPI.IsConnected;
         
@@ -31,14 +33,18 @@ namespace DataSystem.Http
         
         public bool IsHost() => _uuid == _host_uuid || _host_uuid == "unknown";
         
-        public void Start()
+        public void OnEnable()
         {
             if (PlayerParent == null) PlayerParent = this.transform;
             StartCoroutine(JoinCoroutine());
         }
 
-        public void OnDestroy() => Leave();
-        
+        public void OnDisable()
+        {
+            StopCoroutine(poseReportingCoroutine);
+            Leave();
+        }
+
         public void Update()
         {
             if (IsInRoom())
@@ -46,6 +52,9 @@ namespace DataSystem.Http
                 CheckForNewPlayerToGenerate();
                 ReportMyPose();
                 UpdateOtherPlayersPose();
+                CheckForPlayersToDestroy();
+                
+                if(poseReportingCoroutine == null) poseReportingCoroutine = StartCoroutine(PoseReportingCoroutine());
             }
         }
     }

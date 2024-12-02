@@ -7,7 +7,7 @@ namespace DataSystem.Http
 {
     public partial class MultiplayerManager
     {
-        public SerializedDictionary<string, Vector3> positions = new SerializedDictionary<string, Vector3>();
+        private Dictionary<string, Vector3> positions = new Dictionary<string, Vector3>();
         private Dictionary<string, Quaternion> rotations = new Dictionary<string, Quaternion>();
         
         public void RegisterPoseListeners(string targetUuid, GameObject player)
@@ -23,7 +23,7 @@ namespace DataSystem.Http
                 string[] positionStr = info.Message.Split(":")[1].Split(",");
                 string[] rotationStr = info.Message.Split(":")[2].Split(",");
 
-                Debug.Log("received user position update" + info.Message + "(self is "+ targetUuid + ")");
+                //Debug.Log("received user position update" + info.Message + "(self is "+ targetUuid + ")");
                 positions[targetUuid] = new Vector3(float.Parse(positionStr[0]), float.Parse(positionStr[1]), float.Parse(positionStr[2]));
                 rotations[targetUuid] = new Quaternion(float.Parse(rotationStr[0]), float.Parse(rotationStr[1]), float.Parse(rotationStr[2]), float.Parse(rotationStr[3]));
             });
@@ -37,16 +37,29 @@ namespace DataSystem.Http
                 OtherPlayers[uuid].transform.localRotation = rotations[uuid];
             }
         }
+
+        private string poseReportingMessage;
         
         public void ReportMyPose()
         {
             Vector3 position = SelfPlayer.localPosition;
-            Debug.Log(position);
+            //Debug.Log(position);
             Quaternion rotation = SelfPlayer.localRotation;
-            string message = _uuid + ":" + 
-                             position.x + "," + position.y + "," + position.z + ":"  +
-                             rotation.x + "," + rotation.y + "," + rotation.z + "," + rotation.w;
-            ServerAPI.Send("player_pose", message);
+            poseReportingMessage = _uuid + ":" + 
+                                   position.x + "," + position.y + "," + position.z + ":"  +
+                                   rotation.x + "," + rotation.y + "," + rotation.z + "," + rotation.w;
         }
+        
+        private IEnumerator PoseReportingCoroutine()
+        {
+            while (true)
+            {
+                ServerAPI.Send("player_pose", poseReportingMessage);
+                yield return null;
+            }
+        }
+        
+        Coroutine poseReportingCoroutine;
+        
     }
 }
