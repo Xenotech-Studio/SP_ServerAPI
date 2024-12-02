@@ -14,17 +14,18 @@ namespace DataSystem.Http
         
         private Action<string> onMessageReceived;
         
+        public static bool IsConnected => ws != null && ws.IsAlive;
 
         public static void Connect()
         {
-            if (ws != null && ws.IsAlive) return;
+            if (IsConnected) return;
 
             //ws = new WebSocket("ws://fashion.xenotech.studio/api/channels");
             ws = new WebSocket("ws://114.132.240.173:9200/api/channels");
 
             ws.OnMessage += (sender, e) =>
             {
-                Debug.Log("Raw Message received: " + e.Data);
+                // Debug.Log("Raw Message received: " + e.Data);
 
                 // 解析消息格式
                 // 假设消息格式为：`Message from Address(host='127.0.0.1', port=61227): toA: Hello from B`
@@ -98,10 +99,10 @@ namespace DataSystem.Http
 
         public static void Send(string channel, string message)
         {
-            if (ws != null && ws.IsAlive)
+            if (IsConnected)
             {
                 string payload = $"{channel}: {message}";
-                ws.Send(payload);
+                ws.SendAsync(payload, null);
             }
             else
             {
