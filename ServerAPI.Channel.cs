@@ -20,7 +20,7 @@ namespace DataSystem.Http
         {
             if (IsConnected) return;
 
-            //ws = new WebSocket("ws://fashion.xenotech.studio/api/channels");
+            // ws = new WebSocket("ws://fashion.xenotech.studio/api/channels");
             ws = new WebSocket("ws://114.132.240.173:9200/api/channels");
 
             ws.OnMessage += (sender, e) =>
@@ -59,14 +59,23 @@ namespace DataSystem.Http
                             // 分发给监听器
                             if (channelListeners.ContainsKey(channel))
                             {
-                                channelListeners[channel]?.Invoke(messageInfo);
+                                try
+                                {
+                                    channelListeners[channel]?.Invoke(messageInfo);
+                                    Debug.Log($"Channel {channel} listeners invoked.");
+                                }
+                                catch (Exception ex)
+                                {
+                                    Debug.LogError("Error invoking channel listener: " + ex.Message + $"\n{ex.StackTrace}");
+                                }
                             }
+                            else Debug.Log($"Channel {channel} does not have listeners.");
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError("Failed to parse message: " + ex.Message);
+                    Debug.LogError("Failed to parse message: " + ex.Message + "\nRaw Message: " + rawMessage);
                 }
             };
 
@@ -99,7 +108,8 @@ namespace DataSystem.Http
 
         public static void Send(string channel, string message)
         {
-            
+            if (ws == null || !ws.IsAlive) return;
+
             string payload = $"{channel}: {message}";
             ws.Send(payload);
         }
@@ -108,6 +118,8 @@ namespace DataSystem.Http
 
         public static void AddListener(string channel, Action<MessageInfo> callback)
         {
+            if (channelListeners == null) channelListeners = new Dictionary<string, Action<MessageInfo>>();
+
             if (!channelListeners.ContainsKey(channel))
             {
                 channelListeners[channel] = callback;
@@ -118,7 +130,20 @@ namespace DataSystem.Http
             }
         }
         
-        
+        public static void RemoveListener(string channel, Action<MessageInfo> callback)
+        {
+            try
+            {
+                if (channelListeners.ContainsKey(channel))
+                {
+                    channelListeners[channel] -= callback;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError("Error removing channel listener: " + ex.Message + "\nStack Trace: " + ex.StackTrace);
+            }
+        }
         
         // Tests
         #if UNITY_EDITOR
