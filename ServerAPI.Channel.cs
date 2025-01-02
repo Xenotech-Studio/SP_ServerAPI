@@ -128,6 +128,8 @@ namespace DataSystem.Http
             {
                 channelListeners[channel] += callback; // 支持多个监听器
             }
+            
+            Debug.Log($"Added listener to channel {channel}");
         }
         
         public static void RemoveListener(string channel, Action<MessageInfo> callback)
