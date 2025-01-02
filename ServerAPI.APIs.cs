@@ -63,6 +63,22 @@ namespace DataSystem.Http
         public static async Task<DynamicCenterResult> SendRawCommandAudio(string the_command) => 
             await Post<DefaultJson, DynamicCenterResult>("send_audio", new Dictionary<string, string>(){{"data", the_command}}, new DefaultJson());  
         
+        
+        // 新增两个API
+        public static void VehicleStartActionPlay(VehicleID vehicle_id, Action<DynamicCenterResult> onResult = null)
+        {  
+            string command = "StartActionPlay" + ":" + (int)vehicle_id;
+            SendRawCommand(command, onResult: onResult);
+        }
+        
+        public static void VehicleStopActionPlay(VehicleID vehicle_id, Action<DynamicCenterResult> onResult = null)
+        {  
+            string command = "StopActionPlay" + ":" + (int)vehicle_id;
+            SendRawCommand(command, onResult: onResult);
+        }
+        // End of 新增两个API
+        
+        
         public static void VehicleSetShake(VehicleID vehicle_id, int min_amplitude, int max_amplitude, int duration, Action<DynamicCenterResult> onResult = null)
         {  
             string command = "SetShake" + ":" + (int)vehicle_id + "," + min_amplitude + "," + max_amplitude + "," + duration;
