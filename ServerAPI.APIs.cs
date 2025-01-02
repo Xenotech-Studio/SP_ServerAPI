@@ -20,6 +20,13 @@ namespace DataSystem.Http
         Fan_C = 1203,
         Fan_D = 1204,
         Fan_E = 1205,
+        Fan_F = 1206,
+        Fan_G = 1207,
+        Fan_H = 1208,
+        Fan_I = 1209,
+        Fan_J = 1210,
+        Fan_K = 1211,
+        Fan_L = 1212,
     }
 
     public enum FanSpeed
@@ -33,7 +40,11 @@ namespace DataSystem.Http
     {
         Thermal_A = 1401,
         Thermal_B = 1402,
-        Spray = 1801,
+        Thermal_C = 1403,
+        Thermal_D = 1404,
+        Thermal_E = 1405,
+        Thermal_F = 1406,
+        Spray     = 1801,
     }
 
     public enum HeatSprayState

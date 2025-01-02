@@ -26,8 +26,8 @@ namespace DataSystem.Http
         private List<string> newPlayerToGenerate = new List<string>();
         private List<string> playersToDestroy = new List<string>();
         
-
-        public bool IsConnected() => ServerAPI.IsConnected;
+        public bool  isPlay;
+        public bool   IsConnected() => ServerAPI.IsConnected;
         
         public bool IsInRoom() => isInRoom;
         
@@ -55,6 +55,8 @@ namespace DataSystem.Http
                 CheckForPlayersToDestroy();
                 
                 if(poseReportingCoroutine == null) poseReportingCoroutine = StartCoroutine(PoseReportingCoroutine());
+              
+                UpdateOtherPlayersData();
             }
         }
     }
