@@ -6,7 +6,8 @@ namespace DataSystem.Http
 {
     public partial class MultiplayerManager
     {
-        
+        int group = 0;
+        string playerCounterChannelName => $"player_counter_{(group == 1 ? "80" : "81")}";
 
         public IEnumerator JoinCoroutine()
         {
@@ -16,8 +17,19 @@ namespace DataSystem.Http
                 ServerAPI.Connect();
                 yield return new WaitForSeconds(1);
             }
-            
-            ServerAPI.AddListener("player_counter", (MessageInfo info) =>
+
+            var ip = ServerAPI.GetLocalIp();
+            ServerAPI.AddListener(ip, info => {
+                group = int.Parse(info.Message);
+            });
+            ServerAPI.Send("toComputer", $"get_group|{ip}");
+
+            while (group == 0)
+            {
+                yield return null;
+            }
+
+            ServerAPI.AddListener(playerCounterChannelName, (MessageInfo info) =>
             {
                 string action = info.Message.Split(":")[0];
                 string senderUuid = info.Message.Split(":")[1];
@@ -26,7 +38,7 @@ namespace DataSystem.Http
                 {
                     if(senderUuid == _uuid) { return; }
                     if(_host_uuid == "unknown") { _host_uuid = _uuid; }
-                    ServerAPI.Send("player_counter", "response:" + _uuid + ":" + senderUuid + ":" + _host_uuid);
+                    ServerAPI.Send(playerCounterChannelName, "response:" + _uuid + ":" + senderUuid + ":" + _host_uuid);
                     newPlayerToGenerate.Add(senderUuid);
                 }
                 else if (action == "response")
@@ -55,7 +67,7 @@ namespace DataSystem.Http
                 }
             });
             
-            ServerAPI.Send("player_counter","request:" + _uuid);
+            ServerAPI.Send(playerCounterChannelName,"request:" + _uuid);
             yield return new WaitForSeconds(1); // wait for any possible responses
             
             isInRoom = true;
@@ -63,7 +75,7 @@ namespace DataSystem.Http
         
         public void Leave()
         {
-            ServerAPI.Send("player_counter","leave:" + _uuid);
+            ServerAPI.Send(playerCounterChannelName,"leave:" + _uuid);
         }
 
         public void CheckForNewPlayerToGenerate()
