@@ -6,8 +6,8 @@ namespace DataSystem.Http
 {
     public partial class MultiplayerManager
     {
-        int group = 0;
-        string playerCounterChannelName => $"player_counter_{(group == 1 ? "80" : "81")}";
+        int group = -1;
+        string playerCounterChannelName => $"player_counter_{(group == 0 ? "" : group == 1 ? "80" : "81")}";
 
         public IEnumerator JoinCoroutine()
         {
@@ -20,14 +20,24 @@ namespace DataSystem.Http
 
             var ip = ServerAPI.GetLocalIp();
             ServerAPI.AddListener(ip, info => {
+                Debug.Log("Received group number: " + info.Message);
                 group = int.Parse(info.Message);
             });
+            Debug.Log("Listening to " + ip);
             ServerAPI.Send("toComputer", $"get_group|{ip}");
 
-            while (group == 0)
+            float timer = 0;
+            while (group == -1 && timer < 5)
             {
+                timer += Time.deltaTime;
                 yield return null;
             }
+            if (group == -1)
+            {
+                Debug.LogError("Failed to get group number.");
+                group = 0;
+            }
+            Debug.Log("Group: " + group);
 
             ServerAPI.AddListener(playerCounterChannelName, (MessageInfo info) =>
             {
