@@ -9,7 +9,8 @@ namespace DataSystem.Http
 {
     public partial class MultiplayerManager
     {
-        
+        int group = 0;
+        string playerCounterChannelName => $"player_counter_{(group == 1 ? "80" : "81")}";
 
         public IEnumerator JoinCoroutine()
         {
@@ -19,26 +20,35 @@ namespace DataSystem.Http
                 ServerAPI.Connect();
                 yield return new WaitForSeconds(1);
             }
-            RegisterDataListeners(_uuid);
-            ServerAPI.AddListener("player_counter", (MessageInfo info) =>
-                                                    {
-                                                        string action = info.Message.Split(":")[0];
-                                                        string senderUuid = info.Message.Split(":")[1];
-                                                        if (action == "request")
-                                                        {
-                                                            if(senderUuid == _uuid) { return; }
-                                                            Debug.Log(_uuid);
-                                                            if(_host_uuid == "unknown") { _host_uuid = _uuid; }
-                                                            ServerAPI.Send("player_counter", "response:" + _uuid + ":" + senderUuid + ":" + _host_uuid);
-                                                            newPlayerToGenerate.Add(senderUuid);
-                                                          
-                                                        }
-                                                        else if (action == "response")
-                                                        {
-                                                            if (senderUuid == _uuid) { return; }
 
-                                                            string requesterUuid = info.Message.Split(":")[2];
-                                                            string hostUuid = info.Message.Split(":")[3];
+            var ip = ServerAPI.GetLocalIp();
+            ServerAPI.AddListener(ip, info => {
+                group = int.Parse(info.Message);
+            });
+            ServerAPI.Send("toComputer", $"get_group|{ip}");
+
+            while (group == 0)
+            {
+                yield return null;
+            }
+            
+            RegisterDataListeners(_uuid);
+
+            ServerAPI.AddListener(playerCounterChannelName, (MessageInfo info) =>
+            {
+                string action = info.Message.Split(":")[0];
+                string senderUuid = info.Message.Split(":")[1];
+
+                if (action == "request")
+                {
+                    if(senderUuid == _uuid) { return; }
+                    if(_host_uuid == "unknown") { _host_uuid = _uuid; }
+                    ServerAPI.Send(playerCounterChannelName, "response:" + _uuid + ":" + senderUuid + ":" + _host_uuid);
+                    newPlayerToGenerate.Add(senderUuid);
+                }
+                else if (action == "response")
+                {
+                    if (senderUuid == _uuid) { return; }
                     
                                                             Debug.Log("response from " + senderUuid +"---" +requesterUuid+"+++"+hostUuid);
                     
@@ -58,19 +68,19 @@ namespace DataSystem.Http
                                                         }
                                                     });
             
-            ServerAPI.Send("player_counter","request:" + _uuid);
-            if (!DataManager.Instance.AllPlayers.Contains(_uuid))
+            ServerAPI.Send(playerCounterChannelName,"request:" + _uuid);
+
+        	if (!DataManager.Instance.AllPlayers.Contains(_uuid))
             {
                 DataManager.Instance.AllPlayers.Add(_uuid); 
-            }
-            yield return new WaitForSeconds(1); // wait for any possible responses
+            }    yield return new WaitForSeconds(1); // wait for any possible responses
             
             isInRoom = true;
         }
         
         public void Leave()
         {
-            ServerAPI.Send("player_counter","leave:" + _uuid);
+            ServerAPI.Send(playerCounterChannelName,"leave:" + _uuid);
         }
 
         public void CheckForNewPlayerToGenerate()

@@ -10,17 +10,19 @@ namespace DataSystem.Http
 {
     public partial class MultiplayerManager
     {
+        string playerPoseChannelName => $"player_pose_{(group == 1 ? "80" : "81")}";
+
         private Dictionary<string, Vector3>    positions = new Dictionary<string, Vector3>();
         private Dictionary<string, Quaternion> rotations = new Dictionary<string, Quaternion>();
         public void RegisterPoseListeners(string targetUuid, GameObject player)
         {
             positions.Add(targetUuid, new Vector3());
             rotations.Add(targetUuid, new Quaternion());
-            ServerAPI.AddListener("player_pose", (MessageInfo info) =>
-                                                 {
-                                                     //return;
-                                                     string senderUuid = info.Message.Split(":")[0];
-                                                     if (senderUuid == _uuid) { return; }
+            ServerAPI.AddListener(playerPoseChannelName, (MessageInfo info) =>
+            {
+	            //return;
+	            string senderUuid = info.Message.Split(":")[0];
+	            if (senderUuid == _uuid) { return; }
 
                                                      string[] positionStr = info.Message.Split(":")[1].Split(",");
                                                      string[] rotationStr = info.Message.Split(":")[2].Split(",");
@@ -61,7 +63,7 @@ namespace DataSystem.Http
         {
             while (true)
             {
-                ServerAPI.Send("player_pose", poseReportingMessage);
+                ServerAPI.Send(playerPoseChannelName, poseReportingMessage);
                 yield return null;
             }
         }
