@@ -104,6 +104,7 @@ namespace DataSystem.Http
             }
         }
 
+# if UNITY_EDITOR
         // 模拟 door 消息的发送
         // 注意，我并不知道硬件消息的具体含义，这个需要联系一下硬件负责人。
         // 以下模拟消息来自一次实际测试的时候的打印结果
@@ -119,6 +120,7 @@ namespace DataSystem.Http
 
             instance.StartCoroutine(instance.SimulateDoorMessageCoroutine());
         }
+# endif
         
         public IEnumerator SimulateDoorMessageCoroutine()
         {
