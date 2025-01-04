@@ -60,27 +60,32 @@ namespace DataSystem.Http
                 {
                     if (senderUuid == _uuid) { return; }
                     
-                                                            Debug.Log("response from " + senderUuid +"---" +requesterUuid+"+++"+hostUuid);
+                    // Debug.Log("response from " + senderUuid);
+
+                    string requesterUuid = info.Message.Split(":")[2];
+                    string hostUuid      = info.Message.Split(":")[3];
                     
-                                                            if (requesterUuid == _uuid)
-                                                            {
-                                                                newPlayerToGenerate.Add(senderUuid);
-                                                            }
-                                                            _host_uuid = hostUuid;
-                                                        }
-                                                        else if (action == "leave")
-                                                        {
-                                                            if (senderUuid == _host_uuid)
-                                                            {
-                                                                _host_uuid = "unknown";
-                                                            }
-                                                            playersToDestroy.Add(senderUuid);
-                                                        }
-                                                    });
+                    if (requesterUuid == _uuid)
+                    {
+                        newPlayerToGenerate.Add(senderUuid);
+                    }
+                    
+                    _host_uuid = hostUuid;
+                }
+                else if (action == "leave")
+                {
+                    if (senderUuid == _host_uuid)
+                    {
+                        _host_uuid = "unknown";
+                    }
+                    playersToDestroy.Add(senderUuid);
+                }
+            });
             
             ServerAPI.Send(playerCounterChannelName,"request:" + _uuid);
-
-        	if (!DataManager.Instance.AllPlayers.Contains(_uuid))
+            var instance = FindObjectOfType<HardwareStatusManager>();
+            instance.OnHardwareStatus();
+            if (!DataManager.Instance.AllPlayers.Contains(_uuid))
             {
                 DataManager.Instance.AllPlayers.Add(_uuid); 
             }    yield return new WaitForSeconds(1); // wait for any possible responses

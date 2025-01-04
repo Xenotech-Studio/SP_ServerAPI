@@ -28,14 +28,14 @@ namespace DataSystem.Http
         // 启用时注册监听器
         private void OnEnable()
         {
-            if (!ServerAPI.IsConnected)
-            {
-                ServerAPI.Connect();
-            }
-            
+           //if (!ServerAPI.IsConnected)
+           //{
+           //    ServerAPI.Connect();
+           //}
+           //
             // 注册监听 hardware_status 频道
-            ServerAPI.AddListener("hardware_status", OnHardwareStatusReceived);
-            processHardwareStatusCoroutine = StartCoroutine(ProcessHardwareStatusCoroutine());
+            //ServerAPI.AddListener("hardware_status", OnHardwareStatusReceived);
+            //processHardwareStatusCoroutine = StartCoroutine(ProcessHardwareStatusCoroutine());
         }
 
         // 禁用时清理监听器
@@ -47,6 +47,13 @@ namespace DataSystem.Http
             }
 
             Debug.Log("HardwareStatusManager: Disabled and no longer listening.");
+        }
+        
+        public void OnHardwareStatus()
+        {
+            // 注册监听 hardware_status 频道
+            ServerAPI.AddListener("hardware_status", OnHardwareStatusReceived);
+            processHardwareStatusCoroutine = StartCoroutine(ProcessHardwareStatusCoroutine());
         }
 
         // 回调方法，处理收到的 hardware_status 消息
@@ -85,7 +92,8 @@ namespace DataSystem.Http
                                 float.TryParse(valueParts[0].Trim(), out float angle1) &&
                                 float.TryParse(valueParts[1].Trim(), out float angle2))
                             {
-                                DoorAngle = new Vector2(angle1, angle2);
+                                DoorAngle                      = new Vector2(angle1, angle2);
+                                DataManager.Instance.DoorAngle = angle2;
                                 Debug.Log($"Updated DoorAngle: {DoorAngle}");
                             }
                             else
@@ -108,7 +116,7 @@ namespace DataSystem.Http
         // 模拟 door 消息的发送
         // 注意，我并不知道硬件消息的具体含义，这个需要联系一下硬件负责人。
         // 以下模拟消息来自一次实际测试的时候的打印结果
-        [MenuItem("XenoSDK/Simulate Door Message")]
+        //[MenuItem("XenoSDK/Simulate Door Message")]
         public static void SimulateDoorMessage()
         {
             var instance = FindObjectOfType<HardwareStatusManager>();
