@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
@@ -14,7 +15,7 @@ namespace DataSystem.Http
 
     public partial class ServerAPI
     {
-        public static string Hostname = "114.132.240.173:9200/api";
+        public static string Hostname => File.ReadAllText(Path.Combine(Application.streamingAssetsPath, "host.ini"));
         
         
         // GET request in async style
