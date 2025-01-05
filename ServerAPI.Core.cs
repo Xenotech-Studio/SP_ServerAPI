@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
@@ -8,13 +9,32 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace DataSystem.Http
 {
 
     public partial class ServerAPI
     {
-        public static string Hostname = "114.132.240.173:9200/api";
+        public static string Hostname
+        {
+            get
+            {
+                string path = Path.Combine (Application.streamingAssetsPath, "host.ini");
+
+# if UNITY_ANDROID
+                var loadingRequest = UnityWebRequest.Get(path);
+                loadingRequest.SendWebRequest();
+                while (!loadingRequest.isDone && (loadingRequest.result is not UnityWebRequest.Result.ConnectionError));
+                string result = System.Text.Encoding.UTF8.GetString(loadingRequest.downloadHandler.data);
+
+                return result;
+# else
+                return File.ReadAllText(path);
+# endif
+
+            }
+        }
         
         
         // GET request in async style

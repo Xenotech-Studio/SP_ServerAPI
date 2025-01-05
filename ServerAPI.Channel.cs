@@ -21,7 +21,7 @@ namespace DataSystem.Http
             if (IsConnected) return;
 
             // ws = new WebSocket("ws://fashion.xenotech.studio/api/channels");
-            ws = new WebSocket(url: $"ws://{Hostname}/channels");
+            ws = new WebSocket($"ws://{Hostname}/channels");
 
             ws.OnMessage += (sender, e) =>
             {
