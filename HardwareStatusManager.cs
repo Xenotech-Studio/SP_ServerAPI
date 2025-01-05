@@ -33,9 +33,9 @@ namespace DataSystem.Http
            //    ServerAPI.Connect();
            //}
            //
-            // 注册监听 hardware_status 频道
-            //ServerAPI.AddListener("hardware_status", OnHardwareStatusReceived);
-            //processHardwareStatusCoroutine = StartCoroutine(ProcessHardwareStatusCoroutine());
+           // // 注册监听 hardware_status 频道
+           // ServerAPI.AddListener("hardware_status", OnHardwareStatusReceived);
+           // processHardwareStatusCoroutine = StartCoroutine(ProcessHardwareStatusCoroutine());
         }
 
         // 禁用时清理监听器

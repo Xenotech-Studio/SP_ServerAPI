@@ -21,7 +21,7 @@ namespace DataSystem.Http
             if (IsConnected) return;
 
             // ws = new WebSocket("ws://fashion.xenotech.studio/api/channels");
-            ws = new WebSocket("ws://114.132.240.173:9200/api/channels");
+            ws = new WebSocket(url: $"ws://{Hostname}/channels");
 
             ws.OnMessage += (sender, e) =>
             {
@@ -66,16 +66,16 @@ namespace DataSystem.Http
                                 }
                                 catch (Exception ex)
                                 {
-                                    Debug.LogError("Error invoking channel listener: " + ex.Message + $"\n{ex.StackTrace}");
+                                    //Debug.LogError("Error invoking channel listener: " + ex.Message + $"\n{ex.StackTrace}");
                                 }
                             }
-                            else Debug.Log($"Channel {channel} does not have listeners.");
+                            //else Debug.Log($"Channel {channel} does not have listeners.");
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError("Failed to parse message: " + ex.Message + "\nRaw Message: " + rawMessage);
+                    //Debug.LogError("Failed to parse message: " + ex.Message + "\nRaw Message: " + rawMessage);
                 }
             };
 
@@ -108,7 +108,7 @@ namespace DataSystem.Http
 
         public static void Send(string channel, string message)
         {
-            if (ws == null || !ws.IsAlive) return;
+            //if (ws == null || !ws.IsAlive) return;
 
             string payload = $"{channel}: {message}";
             ws.Send(payload);

@@ -15,6 +15,8 @@ namespace DataSystem.Http
 
         public void RegisterDataListeners(string targetUuid)
         {
+            var instance = FindObjectOfType<HardwareStatusManager>();
+            instance.OnHardwareStatus();
             ServerAPI.AddListener("gameprogress", (MessageInfo info) =>
                                                   {
                                                       string action = info.Message;

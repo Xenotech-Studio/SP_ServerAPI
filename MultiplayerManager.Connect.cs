@@ -83,8 +83,6 @@ namespace DataSystem.Http
             });
             
             ServerAPI.Send(playerCounterChannelName,"request:" + _uuid);
-            var instance = FindObjectOfType<HardwareStatusManager>();
-            instance.OnHardwareStatus();
             if (!DataManager.Instance.AllPlayers.Contains(_uuid))
             {
                 DataManager.Instance.AllPlayers.Add(_uuid); 
