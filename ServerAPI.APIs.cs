@@ -21,13 +21,13 @@ namespace DataSystem.Http
         Fan_3 = 1203,
         Fan_4 = 1204,
         Fan_5 = 1205,
-        Fan_6 = 1206,
-        Fan_7 = 1207,
-        Fan_8 = 1208,
-        Fan_9 = 1209,
-        Fan_10 = 1210,
-        Fan_11 = 1211,
-        Fan_12 = 1212,
+        // Fan_6 = 1206,
+        // Fan_7 = 1207,
+        // Fan_8 = 1208,
+        // Fan_9 = 1209,
+        // Fan_10 = 1210,
+        // Fan_11 = 1211,
+        // Fan_12 = 1212,
     }
 
     public enum FanSpeed
@@ -41,10 +41,10 @@ namespace DataSystem.Http
     {
         Thermal_1 = 1401,
         Thermal_2 = 1402,
-        Thermal_3 = 1403,
-        Thermal_4 = 1404,
-        Thermal_5 = 1405,
-        Thermal_6 = 1406,
+        // Thermal_3 = 1403,
+        // Thermal_4 = 1404,
+        // Thermal_5 = 1405,
+        // Thermal_6 = 1406,
         Spray = 1801,
     }
 
