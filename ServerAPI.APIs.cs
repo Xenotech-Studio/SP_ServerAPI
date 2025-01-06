@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using DataSystem.Http.DataStructures;
 using Newtonsoft.Json;
+using UnityEngine;
 
 namespace DataSystem.Http
 {
@@ -15,11 +16,18 @@ namespace DataSystem.Http
 
     public enum FanID
     {
-        Fan_A = 1201,
-        Fan_B = 1202,
-        Fan_C = 1203,
-        Fan_D = 1204,
-        Fan_E = 1205,
+        Fan_1 = 1201,
+        Fan_2 = 1202,
+        Fan_3 = 1203,
+        Fan_4 = 1204,
+        Fan_5 = 1205,
+        Fan_6 = 1206,
+        Fan_7 = 1207,
+        Fan_8 = 1208,
+        Fan_9 = 1209,
+        Fan_10 = 1210,
+        Fan_11 = 1211,
+        Fan_12 = 1212,
     }
 
     public enum FanSpeed
@@ -31,8 +39,12 @@ namespace DataSystem.Http
     }
     public enum HeatSprayID
     {
-        Thermal_A = 1401,
-        Thermal_B = 1402,
+        Thermal_1 = 1401,
+        Thermal_2 = 1402,
+        Thermal_3 = 1403,
+        Thermal_4 = 1404,
+        Thermal_5 = 1405,
+        Thermal_6 = 1406,
         Spray = 1801,
     }
 
@@ -68,12 +80,14 @@ namespace DataSystem.Http
         public static void VehicleStartActionPlay(VehicleID vehicle_id, Action<DynamicCenterResult> onResult = null)
         {  
             string command = "StartActionPlay" + ":" + (int)vehicle_id;
+            Debug.Log(vehicle_id);
             SendRawCommand(command, onResult: onResult);
         }
         
         public static void VehicleStopActionPlay(VehicleID vehicle_id, Action<DynamicCenterResult> onResult = null)
         {  
             string command = "StopActionPlay" + ":" + (int)vehicle_id;
+            Debug.Log(vehicle_id);
             SendRawCommand(command, onResult: onResult);
         }
         // End of 新增两个API
@@ -123,12 +137,15 @@ namespace DataSystem.Http
         public static void SetFanSpeed(FanID fanId, FanSpeed fanSpeed,Action<DynamicCenterResult> onResult = null)
         {
             string command = "SetFan" + ":" + (int)fanId + "," + (int)fanSpeed;
+            Debug.Log(fanId);
+            Debug.Log(fanSpeed);
             SendRawCommand(command, onResult: onResult);
         }
         public static void SetHeatSprayState(HeatSprayID heatSprayId, HeatSprayState heatSprayState,Action<DynamicCenterResult> onResult = null)
         {
             string command = "SetEff" + ":" + (int)heatSprayId + "," + (int)heatSprayState;
             string command2 = "SetEff" + ":" + (int)heatSprayId + "," + (int)heatSprayState;
+            Debug.Log(heatSprayId);
             SendRawCommand(command, onResult: onResult);
         }
 
