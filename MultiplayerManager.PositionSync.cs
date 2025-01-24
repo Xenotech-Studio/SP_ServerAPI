@@ -25,7 +25,12 @@ namespace DataSystem.Http
         private SerializedDictionary<string, bool> AniSetWalk = new SerializedDictionary<string, bool>();
         private SerializedDictionary<string, bool> AniSetSit = new SerializedDictionary<string, bool>();
         
-        private bool _receiveFlag = false;
+        //private bool _receiveFlag = false;
+        
+        private long _otherTimestamp = 0;
+        private long _selfTimestamp = 0;
+        private bool _reportAnyway = false;
+        const long MAX_TIMESTAMP = 99999999999;
         
         public void RegisterPoseListeners(string targetUuid, GameObject player)
         {
@@ -34,21 +39,22 @@ namespace DataSystem.Http
             animStates.Add(targetUuid, "Idle");
             AniSetWalk.Add(targetUuid, false);
             AniSetSit.Add(targetUuid, false);
-            _receiveFlag = true; // warmup when new player added
+            _reportAnyway = true;
            
             ServerAPI.AddListener(playerPoseChannelName, (MessageInfo info) =>
             {
-	            //return;
-	            string senderUuid = info.Message.Split(":")[0];
+                string[] splitMessage = info.Message.Split(":");
+                
+                long senderTimestamp = long.Parse(splitMessage[0]);
+	            string senderUuid = splitMessage[1];
+                
 	            if (senderUuid == _uuid) { return; }
+                
+                if (senderTimestamp > _otherTimestamp || (_otherTimestamp >= MAX_TIMESTAMP - 2 && senderTimestamp<2) ) _otherTimestamp = senderTimestamp;
 
-                if (senderUuid == OtherPlayers.Keys.First()) { _receiveFlag = true; }
-                //if(senderUuid!=_uuid) _receiveFlag = true;
-
-                string[] positionStr  = info.Message.Split(":")[1].Split(",");
-                string[] rotationStr  = info.Message.Split(":")[2].Split(",");
-                //string animStateStr = info.Message.Split(":")[3];
-                string[] aniSetBool = info.Message.Split(":")[3].Split(",");
+                string[] positionStr  = splitMessage[2].Split(",");
+                string[] rotationStr  = splitMessage[3].Split(",");
+                string[] aniSetBool = splitMessage[4].Split(",");
 
                 //Debug.Log("received user position update" + info.Message + "(self is "+ targetUuid + ")");
                 positions[senderUuid] = new Vector3(float.Parse(positionStr[0]), float.Parse(positionStr[1]), float.Parse(positionStr[2]));
@@ -92,14 +98,14 @@ namespace DataSystem.Http
             bool isWalk = SelfAnimator.GetBool("IsWalking");
             bool isSit = SelfAnimator.GetBool("IsSitting");
 
-            string animStateStr = "Unknown";
+            /*string animStateStr = "Unknown";
             foreach (var stateName in StateNames)
             {
                 if (SelfAnimator.GetCurrentAnimatorStateInfo(0).IsName(stateName))
                 {
                     animStateStr = stateName;
                 }
-            }
+            }*/
             
             //poseReportingMessage = _uuid + ":" + 
             //                       position.x + "," + position.y + "," + position.z + ":"  +
@@ -114,10 +120,12 @@ namespace DataSystem.Http
         {
             while (true)
             {
-                if (_receiveFlag)
+                if (_otherTimestamp >= _selfTimestamp || (_otherTimestamp<2 && _selfTimestamp > MAX_TIMESTAMP-2) || _reportAnyway)
                 {
-                    ServerAPI.Send(playerPoseChannelName, poseReportingMessage);
-                    _receiveFlag = false;
+                    _selfTimestamp = _otherTimestamp + 1;
+                    if (_selfTimestamp > MAX_TIMESTAMP) _selfTimestamp = 0;
+                    ServerAPI.Send(playerPoseChannelName, _selfTimestamp + ":" + poseReportingMessage);
+                    _reportAnyway = false;
                 }
                 
                 yield return null;
