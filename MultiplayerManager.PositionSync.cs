@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -23,16 +24,26 @@ namespace DataSystem.Http
         
         private SerializedDictionary<string, bool> AniSetWalk = new SerializedDictionary<string, bool>();
         private SerializedDictionary<string, bool> AniSetSit = new SerializedDictionary<string, bool>();
+        
+        private bool _receiveFlag = false;
+        
         public void RegisterPoseListeners(string targetUuid, GameObject player)
         {
             positions.Add(targetUuid, new Vector3());
             rotations.Add(targetUuid, new Quaternion());
+            animStates.Add(targetUuid, "Idle");
+            AniSetWalk.Add(targetUuid, false);
+            AniSetSit.Add(targetUuid, false);
+            _receiveFlag = true; // warmup when new player added
            
             ServerAPI.AddListener(playerPoseChannelName, (MessageInfo info) =>
             {
 	            //return;
 	            string senderUuid = info.Message.Split(":")[0];
 	            if (senderUuid == _uuid) { return; }
+
+                if (senderUuid == OtherPlayers.Keys.First()) { _receiveFlag = true; }
+                //if(senderUuid!=_uuid) _receiveFlag = true;
 
                 string[] positionStr  = info.Message.Split(":")[1].Split(",");
                 string[] rotationStr  = info.Message.Split(":")[2].Split(",");
@@ -90,8 +101,6 @@ namespace DataSystem.Http
                 }
             }
             
-            
-            
             //poseReportingMessage = _uuid + ":" + 
             //                       position.x + "," + position.y + "," + position.z + ":"  +
             //                       rotation.x + "," + rotation.y + "," + rotation.z + "," + rotation.w;
@@ -105,7 +114,12 @@ namespace DataSystem.Http
         {
             while (true)
             {
-                ServerAPI.Send(playerPoseChannelName, poseReportingMessage);
+                if (_receiveFlag)
+                {
+                    ServerAPI.Send(playerPoseChannelName, poseReportingMessage);
+                    _receiveFlag = false;
+                }
+                
                 yield return null;
             }
         }
