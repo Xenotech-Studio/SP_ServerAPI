@@ -1,9 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Union.Framework;
 using UnityEngine;
+
+#if !SERVERAPI_NOT_PRODUCT
+using Union.Framework;
 using XingHan;
+#endif
+
 
 namespace DataSystem.Http
 {
@@ -25,7 +29,9 @@ namespace DataSystem.Http
             ServerAPI.AddListener(ip, info => {
                 Debug.Log("Received group number: " + info.Message);
                 group                       = int.Parse(info.Message);
+                #if !SERVERAPI_NOT_PRODUCT
                 DataManager.Instance.@group = @group;
+                #endif
             });
             Debug.Log("Listening to " + ip);
             ServerAPI.Send("toComputer", $"get_group|{ip}");
@@ -50,10 +56,12 @@ namespace DataSystem.Http
             {
                 string action = info.Message.Split(":")[0];
                 string senderUuid = info.Message.Split(":")[1];
+                #if !SERVERAPI_NOT_PRODUCT
                 if (!DataManager.Instance.AllPlayers.Contains(_uuid))
                 {
                     DataManager.Instance.AllPlayers.Add(_uuid); 
-                }  
+                }
+                #endif
                 if (action == "request")
                 {
                     if(senderUuid == _uuid) { return; };
@@ -133,10 +141,12 @@ namespace DataSystem.Http
             otherPlayer.gameObject.SetActive(true);
             OtherPlayers.Add(uuid, otherPlayer);
             Debug.Log(OtherPlayers.Count);
+            #if !SERVERAPI_NOT_PRODUCT
             if (!DataManager.Instance.AllPlayers.Contains(uuid))
             {
                 DataManager.Instance.AllPlayers.Add(uuid); 
             }
+            #endif
             RegisterPoseListeners(uuid, otherPlayer);
             //RegisterDataListeners(uuid, otherPlayer);
            
@@ -147,10 +157,12 @@ namespace DataSystem.Http
             if (!OtherPlayers.ContainsKey(uuid)) { return; }
             GameObject.Destroy(OtherPlayers[uuid]);
             OtherPlayers.Remove(uuid);
+            #if !SERVERAPI_NOT_PRODUCT
             if (DataManager.Instance.AllPlayers.Contains(uuid))
             {
                 DataManager.Instance.AllPlayers.Remove(uuid); 
             }
+            #endif
         }
     }
 }

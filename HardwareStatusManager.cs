@@ -93,7 +93,9 @@ namespace DataSystem.Http
                                 float.TryParse(valueParts[1].Trim(), out float angle2))
                             {
                                 DoorAngle                      = new Vector2(angle1, angle2);
+                                #if !SERVERAPI_NOT_PRODUCT
                                 DataManager.Instance.DoorAngle = angle2;
+                                #endif
                                 Debug.Log($"Updated DoorAngle: {DoorAngle}");
                             }
                             else
@@ -112,7 +114,7 @@ namespace DataSystem.Http
             }
         }
 
-# if UNITY_EDITOR
+        # if UNITY_EDITOR
         // 模拟 door 消息的发送
         // 注意，我并不知道硬件消息的具体含义，这个需要联系一下硬件负责人。
         // 以下模拟消息来自一次实际测试的时候的打印结果
@@ -128,7 +130,7 @@ namespace DataSystem.Http
 
             instance.StartCoroutine(instance.SimulateDoorMessageCoroutine());
         }
-# endif
+        # endif
         
         public IEnumerator SimulateDoorMessageCoroutine()
         {
