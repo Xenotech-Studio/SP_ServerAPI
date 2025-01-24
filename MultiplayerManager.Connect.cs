@@ -24,13 +24,14 @@ namespace DataSystem.Http
             var ip = ServerAPI.GetLocalIp();
             ServerAPI.AddListener(ip, info => {
                 Debug.Log("Received group number: " + info.Message);
-                group = int.Parse(info.Message);
+                group                       = int.Parse(info.Message);
+                DataManager.Instance.@group = @group;
             });
             Debug.Log("Listening to " + ip);
             ServerAPI.Send("toComputer", $"get_group|{ip}");
 
             float timer = 0;
-            while (group == -1 && timer < 5)
+            while (/*group == -1 &&*/ timer < 5)
             {
                 timer += Time.deltaTime;
                 yield return null;
@@ -44,14 +45,19 @@ namespace DataSystem.Http
             
             RegisterDataListeners(_uuid);
 
+            Debug.Log("Data Listeners Registered, Adding Listener to PlayerCounterChannel...");
             ServerAPI.AddListener(playerCounterChannelName, (MessageInfo info) =>
             {
                 string action = info.Message.Split(":")[0];
                 string senderUuid = info.Message.Split(":")[1];
-
+                if (!DataManager.Instance.AllPlayers.Contains(_uuid))
+                {
+                    DataManager.Instance.AllPlayers.Add(_uuid); 
+                }  
                 if (action == "request")
                 {
-                    if(senderUuid == _uuid) { return; }
+                    if(senderUuid == _uuid) { return; };
+                    Debug.Log("received REQUEST from " + senderUuid + ", content:\n"+info.Message);
                     if(_host_uuid == "unknown") { _host_uuid = _uuid; }
                     ServerAPI.Send(playerCounterChannelName, "response:" + _uuid + ":" + senderUuid + ":" + _host_uuid);
                     newPlayerToGenerate.Add(senderUuid);
@@ -61,6 +67,7 @@ namespace DataSystem.Http
                     if (senderUuid == _uuid) { return; }
                     
                     // Debug.Log("response from " + senderUuid);
+                    Debug.Log("received RESPONSE from " + senderUuid + ", content:\n" +info.Message);
 
                     string requesterUuid = info.Message.Split(":")[2];
                     string hostUuid      = info.Message.Split(":")[3];
@@ -80,13 +87,11 @@ namespace DataSystem.Http
                     }
                     playersToDestroy.Add(senderUuid);
                 }
+                
             });
-            
+            Debug.Log("Sending REQUEST...");
             ServerAPI.Send(playerCounterChannelName,"request:" + _uuid);
-            if (!DataManager.Instance.AllPlayers.Contains(_uuid))
-            {
-                DataManager.Instance.AllPlayers.Add(_uuid); 
-            }    yield return new WaitForSeconds(1); // wait for any possible responses
+            yield return new WaitForSeconds(1); // wait for any possible responses
             
             isInRoom = true;
         }
