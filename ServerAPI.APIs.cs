@@ -16,18 +16,11 @@ namespace DataSystem.Http
 
     public enum FanID
     {
-        Fan_1 = 1201,
-        Fan_2 = 1202,
-        Fan_3 = 1203,
-        Fan_4 = 1204,
-        Fan_5 = 1205,
-        // Fan_6 = 1206,
-        // Fan_7 = 1207,
-        // Fan_8 = 1208,
-        // Fan_9 = 1209,
-        // Fan_10 = 1210,
-        // Fan_11 = 1211,
-        // Fan_12 = 1212,
+        Fan_A = 1201,
+        Fan_B = 1202,
+        Fan_C = 1203,
+        Fan_D = 1204,
+        Fan_E = 1205
     }
 
     public enum FanSpeed

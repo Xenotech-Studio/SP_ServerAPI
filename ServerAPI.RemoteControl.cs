@@ -9,7 +9,9 @@ using TMPro;
 
 namespace DataSystem.Http
 {
-    
+
+# if SERVERAPI_NOT_PRODUCT
+
     public class RemoteControl : MonoBehaviour
     {
         public TMP_Dropdown vehicleDropdown;
@@ -254,6 +256,9 @@ namespace DataSystem.Http
             TooltipController.Instance.Show();
         }
     }
+
+# endif
+
 }
 
 
