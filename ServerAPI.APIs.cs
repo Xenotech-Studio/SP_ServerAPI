@@ -82,6 +82,17 @@ namespace DataSystem.Http
         // End of 新增两个API
         
         
+        // 再次新增1个API
+        public static void VehicleSetAxis(VehicleID vehicle_id, 
+            float axis1, float axis2, float axis3, float axis4, float axis5, float axis6,
+            Action<DynamicCenterResult> onResult = null)
+        {  
+            // Example - "SetAxis:1001,10.33,8.10,7.34,7.93,6.77,8.63"
+            string command = "SetAxis" + ":" + (int)vehicle_id + "," + axis1 + "," + axis2 + "," + axis3 + "," + axis4 + "," + axis5 + "," + axis6;
+            SendRawCommand(command, onResult: onResult);
+        }
+        // End of 再次新增1个API
+        
         public static void VehicleSetShake(VehicleID vehicle_id, int min_amplitude, int max_amplitude, int duration, Action<DynamicCenterResult> onResult = null)
         {  
             string command = "SetShake" + ":" + (int)vehicle_id + "," + min_amplitude + "," + max_amplitude + "," + duration;
