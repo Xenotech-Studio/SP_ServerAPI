@@ -39,13 +39,9 @@ namespace DataSystem.Http
     }
     public enum HeatSprayID
     {
-        Thermal_1 = 1401,
-        Thermal_2 = 1402,
-        // Thermal_3 = 1403,
-        // Thermal_4 = 1404,
-        // Thermal_5 = 1405,
-        // Thermal_6 = 1406,
-        Spray = 1801,
+        Thermal_A = 1401,
+        Thermal_B = 1402,
+        Spray     = 1801,
     }
 
     public enum HeatSprayState

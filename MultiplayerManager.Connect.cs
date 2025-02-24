@@ -1,6 +1,13 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
+#if !SERVERAPI_NOT_PRODUCT
+using Union.Framework;
+using XingHan;
+#endif
+
 
 namespace DataSystem.Http
 {
@@ -21,13 +28,16 @@ namespace DataSystem.Http
             var ip = ServerAPI.GetLocalIp();
             ServerAPI.AddListener(ip, info => {
                 Debug.Log("Received group number: " + info.Message);
-                group = int.Parse(info.Message);
+                group                       = int.Parse(info.Message);
+                #if !SERVERAPI_NOT_PRODUCT
+                DataManager.Instance.@group = @group;
+                #endif
             });
             Debug.Log("Listening to " + ip);
             ServerAPI.Send("toComputer", $"get_group|{ip}");
 
             float timer = 0;
-            while (group == -1 && timer < 5)
+            while (/*group == -1 &&*/ timer < 5)
             {
                 timer += Time.deltaTime;
                 yield return null;
@@ -38,15 +48,24 @@ namespace DataSystem.Http
                 group = 0;
             }
             Debug.Log("Group: " + group);
+            
+            RegisterDataListeners(_uuid);
 
+            Debug.Log("Data Listeners Registered, Adding Listener to PlayerCounterChannel...");
             ServerAPI.AddListener(playerCounterChannelName, (MessageInfo info) =>
             {
                 string action = info.Message.Split(":")[0];
                 string senderUuid = info.Message.Split(":")[1];
-
+                #if !SERVERAPI_NOT_PRODUCT
+                if (!DataManager.Instance.AllPlayers.Contains(_uuid))
+                {
+                    DataManager.Instance.AllPlayers.Add(_uuid); 
+                }
+                #endif
                 if (action == "request")
                 {
-                    if(senderUuid == _uuid) { return; }
+                    if(senderUuid == _uuid) { return; };
+                    Debug.Log("received REQUEST from " + senderUuid + ", content:\n"+info.Message);
                     if(_host_uuid == "unknown") { _host_uuid = _uuid; }
                     ServerAPI.Send(playerCounterChannelName, "response:" + _uuid + ":" + senderUuid + ":" + _host_uuid);
                     newPlayerToGenerate.Add(senderUuid);
@@ -56,9 +75,10 @@ namespace DataSystem.Http
                     if (senderUuid == _uuid) { return; }
                     
                     // Debug.Log("response from " + senderUuid);
+                    Debug.Log("received RESPONSE from " + senderUuid + ", content:\n" +info.Message);
 
                     string requesterUuid = info.Message.Split(":")[2];
-                    string hostUuid = info.Message.Split(":")[3];
+                    string hostUuid      = info.Message.Split(":")[3];
                     
                     if (requesterUuid == _uuid)
                     {
@@ -75,8 +95,9 @@ namespace DataSystem.Http
                     }
                     playersToDestroy.Add(senderUuid);
                 }
+                
             });
-            
+            Debug.Log("Sending REQUEST...");
             ServerAPI.Send(playerCounterChannelName,"request:" + _uuid);
             yield return new WaitForSeconds(1); // wait for any possible responses
             
@@ -113,13 +134,22 @@ namespace DataSystem.Http
         private void GenerateOtherPlayer(string uuid)
         {
             if (OtherPlayers.ContainsKey(uuid)) { return; }
-            GameObject otherPlayer = GameObject.Instantiate(OtherPlayerPrefab, PlayerParent, true);
+            GameObject otherPlayer = GameObject.Instantiate(OtherPlayerPrefab, PlayerParent ,true);
             otherPlayer.name = "Player(" + uuid + ")";
+            Debug.Log(otherPlayer.name);
             otherPlayer.transform.localPosition = new Vector3(0, 0, 0);
             otherPlayer.gameObject.SetActive(true);
             OtherPlayers.Add(uuid, otherPlayer);
-            
+            Debug.Log(OtherPlayers.Count);
+            #if !SERVERAPI_NOT_PRODUCT
+            if (!DataManager.Instance.AllPlayers.Contains(uuid))
+            {
+                DataManager.Instance.AllPlayers.Add(uuid); 
+            }
+            #endif
             RegisterPoseListeners(uuid, otherPlayer);
+            //RegisterDataListeners(uuid, otherPlayer);
+           
         }
         
         private void DestroyOtherPlayer(string uuid)
@@ -127,6 +157,12 @@ namespace DataSystem.Http
             if (!OtherPlayers.ContainsKey(uuid)) { return; }
             GameObject.Destroy(OtherPlayers[uuid]);
             OtherPlayers.Remove(uuid);
+            #if !SERVERAPI_NOT_PRODUCT
+            if (DataManager.Instance.AllPlayers.Contains(uuid))
+            {
+                DataManager.Instance.AllPlayers.Remove(uuid); 
+            }
+            #endif
         }
     }
 }

@@ -62,20 +62,20 @@ namespace DataSystem.Http
                                 try
                                 {
                                     channelListeners[channel]?.Invoke(messageInfo);
-                                    Debug.Log($"Channel {channel} listeners invoked.");
+                                    //Debug.Log($"Channel {channel} listeners invoked.");
                                 }
                                 catch (Exception ex)
                                 {
-                                    Debug.LogError("Error invoking channel listener: " + ex.Message + $"\n{ex.StackTrace}");
+                                    //Debug.LogError("Error invoking channel listener: " + ex.Message + $"\n{ex.StackTrace}");
                                 }
                             }
-                            else Debug.Log($"Channel {channel} does not have listeners.");
+                            //else Debug.Log($"Channel {channel} does not have listeners.");
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError("Failed to parse message: " + ex.Message + "\nRaw Message: " + rawMessage);
+                    //Debug.LogError("Failed to parse message: " + ex.Message + "\nRaw Message: " + rawMessage);
                 }
             };
 
@@ -108,7 +108,7 @@ namespace DataSystem.Http
 
         public static void Send(string channel, string message)
         {
-            if (ws == null || !ws.IsAlive) return;
+            //if (ws == null || !ws.IsAlive) return;
 
             string payload = $"{channel}: {message}";
             ws.Send(payload);
