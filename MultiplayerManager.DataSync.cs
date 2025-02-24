@@ -21,7 +21,22 @@ namespace DataSystem.Http
         {
             var instance = FindObjectOfType<HardwareStatusManager>();
             instance.OnHardwareStatus();
-            ServerAPI.AddListener("gameprogress", (MessageInfo info) =>
+            ServerAPI.AddListener("gameprogress80", (MessageInfo info) =>
+            {
+                string action = info.Message;
+                #if !SERVERAPI_NOT_PRODUCT
+                if (action == "start")
+                {
+                    //游戏开始
+                    DataManager.Instance.isStartGame = true;
+                }
+                else if (action == "skip")
+                {
+                    DataManager.Instance.isJumpWait = true;
+                }
+                #endif
+            });
+            ServerAPI.AddListener("gameprogress81", (MessageInfo info) =>
             {
                 string action = info.Message;
                 #if !SERVERAPI_NOT_PRODUCT
@@ -59,6 +74,17 @@ namespace DataSystem.Http
                 }
                 #endif
             });
+            ServerAPI.AddListener("ExitVehicle1", (MessageInfo info) =>
+            {
+                string playerUUid = info.Message;
+
+#if !SERVERAPI_NOT_PRODUCT
+                if (DataManager.Instance.Vehicle1PlayerUUids.Contains(playerUUid))
+                {
+                    DataManager.Instance.Vehicle1PlayerUUids.Remove(playerUUid);
+                }
+#endif
+            });
             ServerAPI.AddListener("PlayVehicle1Video", (MessageInfo info) =>
             {
                 string action = info.Message;
@@ -81,6 +107,17 @@ namespace DataSystem.Http
                     DataManager.Instance.Vehicle2PlayerUUids.Add(playerUUid);
                 }
                 #endif
+            });
+            ServerAPI.AddListener("ExitVehicle2", (MessageInfo info) =>
+            {
+                string playerUUid = info.Message;
+
+#if !SERVERAPI_NOT_PRODUCT
+                if (DataManager.Instance.Vehicle2PlayerUUids.Contains(playerUUid))
+                {
+                    DataManager.Instance.Vehicle2PlayerUUids.Remove(playerUUid);
+                }
+#endif
             });
             ServerAPI.AddListener("PlayVehicle2Video", (MessageInfo info) =>
             {
