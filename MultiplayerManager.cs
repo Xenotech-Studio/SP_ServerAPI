@@ -45,7 +45,7 @@ namespace DataSystem.Http
         
         public bool IsInRoom() => isInRoom;
         
-        public bool IsHost() => _uuid == _host_uuid /*|| _host_uuid == "unknown"*/;
+        public bool IsHost() => _uuid == _host_uuid || _host_uuid == "unknown";
         
         public void OnEnable()
         {
