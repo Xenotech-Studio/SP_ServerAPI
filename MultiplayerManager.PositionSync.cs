@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -15,20 +16,25 @@ namespace DataSystem.Http
 
         string playerPoseChannelName => $"player_pose_{(group == 0 ? "" : group == 1 ? "80" : "81")}";
 
-        public SerializedDictionary<string, Vector3> positions  = new SerializedDictionary<string, Vector3>();
+        public Dictionary<string, Vector3> positions  = new Dictionary<string, Vector3>();
         private Dictionary<string, Quaternion>        rotations  = new Dictionary<string, Quaternion>();
         private Dictionary<string, string>            animStates = new Dictionary<string, string>();
 
         private Dictionary<string, Animator> _animatorsCache = new Dictionary<string, Animator>();
         private Dictionary<string, string> _animatorStateCache = new Dictionary<string, string>();
         
-        private SerializedDictionary<string, bool> AniSetWalk = new SerializedDictionary<string, bool>();
-        private SerializedDictionary<string, bool> AniSetSit = new SerializedDictionary<string, bool>();
+        private Dictionary<string, bool> AniSetWalk = new Dictionary<string, bool>();
+        private Dictionary<string, bool> AniSetSit = new Dictionary<string, bool>();
+        
+        private Dictionary<string, long> _lastReceivedTimestamp = new Dictionary<string, long>();
+        private Dictionary<string, long> _commulativeTimeAlive = new Dictionary<string, long>();
+
+        public int DisconnectTimeout = 100;
         
         //private bool _receiveFlag = false;
         
         private long _otherTimestamp = 0;
-        private long _selfTimestamp = 0;
+        public long _selfTimestamp = 0;
         private bool _reportAnyway = false;
         const long MAX_TIMESTAMP = 99999999999;
         
@@ -39,6 +45,7 @@ namespace DataSystem.Http
             animStates.Add(targetUuid, "Idle");
             AniSetWalk.Add(targetUuid, false);
             AniSetSit.Add(targetUuid, false);
+            _commulativeTimeAlive.Add(targetUuid, 0);
             _reportAnyway = true;
            
             ServerAPI.AddListener(playerPoseChannelName, (MessageInfo info) =>
@@ -48,25 +55,47 @@ namespace DataSystem.Http
                 long senderTimestamp = long.Parse(splitMessage[0]);
 	            string senderUuid = splitMessage[1];
                 
-	            if (senderUuid == _uuid) { return; }
+                if (senderUuid != targetUuid) { return; }
+
+                //if (senderTimestamp > _otherTimestamp || (_otherTimestamp >= MAX_TIMESTAMP - 2 && senderTimestamp < 2))
+                if (CycleCompare(senderTimestamp, _otherTimestamp, MAX_TIMESTAMP))
+                {
+                    _otherTimestamp = senderTimestamp;
+                }
                 
-                if (senderTimestamp > _otherTimestamp || (_otherTimestamp >= MAX_TIMESTAMP - 2 && senderTimestamp<2) ) _otherTimestamp = senderTimestamp;
+                // record last received timestamp
+                _lastReceivedTimestamp[senderUuid] = senderTimestamp;
+                _commulativeTimeAlive[senderUuid] += 1;
 
                 string[] positionStr  = splitMessage[2].Split(",");
                 string[] rotationStr  = splitMessage[3].Split(",");
                 string[] aniSetBool = splitMessage[4].Split(",");
 
                 //Debug.Log("received user position update" + info.Message + "(self is "+ targetUuid + ")");
-                positions[senderUuid] = new Vector3(float.Parse(positionStr[0]), float.Parse(positionStr[1]), float.Parse(positionStr[2]));
-                rotations[senderUuid] = new Quaternion(float.Parse(rotationStr[0]), float.Parse(rotationStr[1]), float.Parse(rotationStr[2]), float.Parse(rotationStr[3]));
+                positions[targetUuid] = new Vector3(float.Parse(positionStr[0]), float.Parse(positionStr[1]), float.Parse(positionStr[2]));
+                rotations[targetUuid] = new Quaternion(float.Parse(rotationStr[0]), float.Parse(rotationStr[1]), float.Parse(rotationStr[2]), float.Parse(rotationStr[3]));
                 
                 //animStates[senderUuid]      = animStateStr;
-                AniSetWalk[senderUuid] = Boolean.Parse(aniSetBool[0]);
-                AniSetSit[senderUuid] = Boolean.Parse(aniSetBool[1]);
+                AniSetWalk[targetUuid] = Boolean.Parse(aniSetBool[0]);
+                AniSetSit[targetUuid] = Boolean.Parse(aniSetBool[1]);
 
             });
-            
         }
+        
+        private bool CycleCompare(long a, long b, long max, bool equal=false)
+        {
+            //senderTimestamp > _otherTimestamp || (_otherTimestamp >= MAX_TIMESTAMP - 2 && senderTimestamp < 2)
+            if(!equal) return a > b || (b >= max - 2 && a < 2);
+            else return a >= b || (b >= max - 2 && a < 2);
+        }
+        
+        private long CycleAdd(long a, long b, long max)
+        {
+            long result = a + b;
+            if (result >= max) result -= max;
+            return result;
+        }
+        
 
         public void UpdateOtherPlayersPose()
         {
@@ -120,7 +149,8 @@ namespace DataSystem.Http
         {
             while (true)
             {
-                if (_otherTimestamp >= _selfTimestamp || (_otherTimestamp<2 && _selfTimestamp > MAX_TIMESTAMP-2) || _reportAnyway)
+                //if (_otherTimestamp >= _selfTimestamp || (_otherTimestamp<2 && _selfTimestamp > MAX_TIMESTAMP-2) || _reportAnyway)
+                if (CycleCompare(_otherTimestamp, _selfTimestamp, MAX_TIMESTAMP, equal:true) || _reportAnyway)
                 {
                     _selfTimestamp = _otherTimestamp + 1;
                     if (_selfTimestamp > MAX_TIMESTAMP) _selfTimestamp = 0;
@@ -159,6 +189,30 @@ namespace DataSystem.Http
                 //return _animatorStateCache[uuid];
                 return null;
             }
+        }
+        
+        public void CheckForPlayersToTimeout()
+        {
+            // destroy player that has {DisconnectTimeout} ticks not updated
+            foreach (string uuid in OtherPlayers.Keys)
+            {
+                if (!_lastReceivedTimestamp.ContainsKey(uuid)) { continue; }
+
+                if (_commulativeTimeAlive[uuid] < 100) { continue; }
+                
+                //if (_lastReceivedTimestamp[uuid] < _otherTimestamp - DisconnectTimeout)
+                if (!CycleCompare(CycleAdd(_lastReceivedTimestamp[uuid], DisconnectTimeout, MAX_TIMESTAMP), _otherTimestamp, MAX_TIMESTAMP))
+                {
+                    Debug.Log("Player " + uuid + " disconnected");
+                    playersToDestroy.Add(uuid);
+                }
+            }
+            
+            foreach (string uuid in playersToDestroy)
+            {
+                DestroyOtherPlayer(uuid);
+            }
+            playersToDestroy.Clear();
         }
     }
 }

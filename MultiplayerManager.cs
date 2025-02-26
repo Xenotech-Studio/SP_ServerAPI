@@ -36,7 +36,7 @@ namespace DataSystem.Http
         
         public Transform PlayerParent;
 
-        public  SerializedDictionary<string, GameObject> OtherPlayers        = new SerializedDictionary<string, GameObject>();
+        public  Dictionary<string, GameObject> OtherPlayers        = new Dictionary<string, GameObject>();
         private List<string>                             newPlayerToGenerate = new List<string>();
         private List<string>                             playersToDestroy    = new List<string>();
         
@@ -56,7 +56,7 @@ namespace DataSystem.Http
         public void OnDisable()
         {
             StopCoroutine(poseReportingCoroutine);
-            Leave();
+            //Leave();
         }
 
         public void Update()
@@ -67,6 +67,7 @@ namespace DataSystem.Http
                 ReportMyPose();
                 UpdateOtherPlayersPose();
                 CheckForPlayersToDestroy();
+                CheckForPlayersToTimeout();
                 
                 if(poseReportingCoroutine == null) poseReportingCoroutine = StartCoroutine(PoseReportingCoroutine());
               

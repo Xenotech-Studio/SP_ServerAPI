@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using WebSocketSharp;
 using UnityEditor;
 using UnityEngine;
@@ -23,7 +24,7 @@ namespace DataSystem.Http
             // ws = new WebSocket("ws://fashion.xenotech.studio/api/channels");
             ws = new WebSocket($"ws://{Hostname}/channels");
 
-            ws.OnMessage += (sender, e) =>
+            ws.OnMessage += async (sender, e) =>
             {
                 // Debug.Log("Raw Message received: " + e.Data);
 
