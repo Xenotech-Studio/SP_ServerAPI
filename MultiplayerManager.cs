@@ -68,6 +68,7 @@ namespace DataSystem.Http
                 UpdateOtherPlayersPose();
                 CheckForPlayersToDestroy();
                 CheckForPlayersToTimeout();
+                ReestablishHostUpdate();
                 
                 if(poseReportingCoroutine == null) poseReportingCoroutine = StartCoroutine(PoseReportingCoroutine());
               

@@ -205,6 +205,12 @@ namespace DataSystem.Http
                 {
                     Debug.Log("Player " + uuid + " disconnected");
                     playersToDestroy.Add(uuid);
+                    
+                    if(uuid==_host_uuid)
+                    {
+                        _host_uuid = "unknown";
+                        _needReestablishHost = true;
+                    }
                 }
             }
             
